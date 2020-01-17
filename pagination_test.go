@@ -71,18 +71,18 @@ func createPaginatedLanguagesSchema(t *testing.T, DataResolve, CountResolve inte
 		Name:              "Languages",
 		Type:              graphql.String,
 		Args:              nil,
-		DataResolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+		DataResolve: func(p graphql.ResolveParams, page Page) (i interface{}, e error) {
 			return []string{"Go", "Javascript", "Ruby"}, nil
 		},
-		CountResolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+		CountResolve: func(p graphql.ResolveParams, page Page) (i interface{}, e error) {
 			return 3, nil
 		},
 	}
 	if DataResolve != nil {
-		f.DataResolve = DataResolve.(graphql.FieldResolveFn)
+		f.DataResolve = DataResolve.(PaginatedResolverFn)
 	}
 	if CountResolve != nil {
-		f.CountResolve = CountResolve.(graphql.FieldResolveFn)
+		f.CountResolve = CountResolve.(PaginatedResolverFn)
 	}
 	fields := graphql.Fields{
 		"languages": Paginated(f),
@@ -145,7 +145,7 @@ func TestPaginatedRequestOnlyCount(t *testing.T) {
 }
 
 func TestPaginatedRequestDataError(t *testing.T) {
-	var dataResolve graphql.FieldResolveFn = func(p graphql.ResolveParams) (i interface{}, e error) {
+	var dataResolve PaginatedResolverFn = func(p graphql.ResolveParams, page Page) (i interface{}, e error) {
 		return nil, errors.New("data error")
 	}
 	schema := createPaginatedLanguagesSchema(t, dataResolve, nil)
@@ -162,7 +162,7 @@ func TestPaginatedRequestDataError(t *testing.T) {
 }
 
 func TestPaginatedRequestCountError(t *testing.T) {
-	var countResolve graphql.FieldResolveFn = func(p graphql.ResolveParams) (i interface{}, e error) {
+	var countResolve PaginatedResolverFn = func(p graphql.ResolveParams, page Page) (i interface{}, e error) {
 		return nil, errors.New("count error")
 	}
 	schema := createPaginatedLanguagesSchema(t, nil, countResolve)
