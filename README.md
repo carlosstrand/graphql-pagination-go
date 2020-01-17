@@ -35,7 +35,7 @@ Now you can query as below:
 
 ```gql
   query {
-    languages {
+    languages(limit: 10, skip: 20) {
       data
       count
     }
