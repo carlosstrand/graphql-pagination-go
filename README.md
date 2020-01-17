@@ -33,7 +33,7 @@ Example:
 
 Now you can query as below:
 
-```
+```gql
   query {
     languages {
       data
@@ -47,7 +47,7 @@ Now you can query as below:
 
 In some datasources or databases like MongoDB, calling a count comes at an additional cost and is not always used. Thus, this library takes care of resolvers only of the requested fields (data and / or count).
 
-```
+```gql
   query {
     languages {
       count
