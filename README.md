@@ -4,7 +4,7 @@
 
 # graphql-pagination-go
 
-This library makes it easy to create paged fields for graphql-go. We currently have the following features:
+This library makes it easy to create paginated fields for graphql-go. We currently have the following features:
 
 - [x] Simple Pagination (data & count)
 - [x] Separated data and count resolvers
@@ -45,7 +45,7 @@ Now you can query as below:
 
 ## Resolve only requested fields
 
-In some datasources or databases like MongoDB, calling a count comes at an additional cost and is not always used. Thus, this library takes care of resolvers only of the required fields (data and / or count).
+In some datasources or databases like MongoDB, calling a count comes at an additional cost and is not always used. Thus, this library takes care of resolvers only of the requested fields (data and / or count).
 
 ```
   query {
