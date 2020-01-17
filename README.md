@@ -15,14 +15,14 @@ Example:
 
 ```go
   fields := graphql.Fields{
-    "languages": Paginated(&PaginatedField{
+    "languages": pagination.Paginated(&pagination.PaginatedField{
       Name: "Languages",
       Type: graphql.String,
       Args: nil,
-      DataResolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+      DataResolve: func(p graphql.ResolveParams, page pagination.Page) (i interface{}, e error) {
           return []string{"Go", "Javascript", "Ruby"}, nil
       },
-      CountResolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+      CountResolve: func(p graphql.ResolveParams, page pagination.Page) (i interface{}, e error) {
           return 3, nil
       },
     }),
@@ -39,6 +39,23 @@ Now you can query as below:
       data
       count
     }
+  }
+```
+
+## Skip and Limit
+
+This library already has the `limit` and `skip` arguments ready to be used in a query with the database or external service. See the following example:
+
+```go
+  var DataResolver = func(p graphql.ResolveParams, page pagination.Page) (i interface{}, e error) {
+      users, err := users.FindMany(db.Filter{
+        Limit: page.Limit,
+        Skip: page.Skip,
+      })
+      if err != nil {
+        return nil, err
+      }
+      return users, nil
   }
 ```
 
