@@ -9,6 +9,7 @@ This library makes it easy to create paginated fields for graphql-go. We current
 - [x] Simple Pagination (data & count)
 - [x] Separated data and count resolvers
 - [x] Resolvers are executed only for requested fields
+- [x] Skip and Limit
 
 
 Example:
