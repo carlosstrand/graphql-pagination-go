@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func setupGraphQL(t * testing.T, fields graphql.Fields) graphql.Schema {
+func setupGraphQL(t *testing.T, fields graphql.Fields) graphql.Schema {
 	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: fields}
 	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
 	schema, err := graphql.NewSchema(schemaConfig)
@@ -17,7 +17,7 @@ func setupGraphQL(t * testing.T, fields graphql.Fields) graphql.Schema {
 	return schema
 }
 
-func assertData(t * testing.T, r *graphql.Result, paginatedName string, expectedData []string) {
+func assertData(t *testing.T, r *graphql.Result, paginatedName string, expectedData []string) {
 	f := r.Data.(map[string]interface{})[paginatedName]
 	data := f.(map[string]interface{})["data"].([]interface{})
 	if len(expectedData) != len(data) {
@@ -30,15 +30,15 @@ func assertData(t * testing.T, r *graphql.Result, paginatedName string, expected
 	}
 }
 
-func assertCount(t * testing.T, r *graphql.Result, paginatedName string, expectedCount int) {
+func assertCount(t *testing.T, r *graphql.Result, paginatedName string, expectedCount int) {
 	f := r.Data.(map[string]interface{})[paginatedName]
 	count := f.(map[string]interface{})["count"].(int)
-	if expectedCount != count{
+	if expectedCount != count {
 		t.Fatalf("count failed: %d not equal a %d", count, expectedCount)
 	}
 }
 
-func assertCountIsNil(t * testing.T, r *graphql.Result, paginatedName string) {
+func assertCountIsNil(t *testing.T, r *graphql.Result, paginatedName string) {
 	f := r.Data.(map[string]interface{})[paginatedName]
 	value := f.(map[string]interface{})["count"]
 	if value != nil {
@@ -46,7 +46,7 @@ func assertCountIsNil(t * testing.T, r *graphql.Result, paginatedName string) {
 	}
 }
 
-func assertDataIsNil(t * testing.T, r *graphql.Result, paginatedName string) {
+func assertDataIsNil(t *testing.T, r *graphql.Result, paginatedName string) {
 	f := r.Data.(map[string]interface{})[paginatedName]
 	value := f.(map[string]interface{})["data"]
 	if value != nil {
@@ -54,7 +54,7 @@ func assertDataIsNil(t * testing.T, r *graphql.Result, paginatedName string) {
 	}
 }
 
-func assertError(t * testing.T, r * graphql.Result, errorStr string) {
+func assertError(t *testing.T, r *graphql.Result, errorStr string) {
 	found := false
 	for _, e := range r.Errors {
 		if e.Message == errorStr {
@@ -68,9 +68,9 @@ func assertError(t * testing.T, r * graphql.Result, errorStr string) {
 
 func createPaginatedLanguagesSchema(t *testing.T, DataResolve, CountResolve interface{}) graphql.Schema {
 	f := &PaginatedField{
-		Name:              "Languages",
-		Type:              graphql.String,
-		Args:              nil,
+		Name: "Languages",
+		Type: graphql.String,
+		Args: nil,
 		DataResolve: func(p graphql.ResolveParams, page Page) (i interface{}, e error) {
 			return []string{"Go", "Javascript", "Ruby"}, nil
 		},
@@ -83,6 +83,21 @@ func createPaginatedLanguagesSchema(t *testing.T, DataResolve, CountResolve inte
 	}
 	if CountResolve != nil {
 		f.CountResolve = CountResolve.(PaginatedResolverFn)
+	}
+	fields := graphql.Fields{
+		"languages": Paginated(f),
+	}
+	return setupGraphQL(t, fields)
+}
+
+func createPaginatedLanguagesDataAndCountSchema(t *testing.T) graphql.Schema {
+	f := &PaginatedField{
+		Name: "Languages",
+		Type: graphql.String,
+		Args: nil,
+		DataAndCountResolve: func(p graphql.ResolveParams, page Page) (interface{}, int, error) {
+			return []string{"Go", "Javascript", "Ruby", "Elixir"}, 4, nil
+		},
 	}
 	fields := graphql.Fields{
 		"languages": Paginated(f),
@@ -178,3 +193,23 @@ func TestPaginatedRequestCountError(t *testing.T) {
 	assertError(t, r, "count error")
 }
 
+func TestPaginatedDataAndCount(t *testing.T) {
+	schema := createPaginatedLanguagesDataAndCountSchema(t)
+	query := `
+		{
+			languages {
+				data
+				count
+			}
+		}
+	`
+	params := graphql.Params{Schema: schema, RequestString: query}
+	r := graphql.Do(params)
+	assertData(t, r, "languages", []string{
+		"Go",
+		"Javascript",
+		"Ruby",
+		"Elixir",
+	})
+	assertCount(t, r, "languages", 4)
+}

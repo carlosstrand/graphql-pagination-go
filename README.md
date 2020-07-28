@@ -74,3 +74,21 @@ In some datasources or databases like MongoDB, calling a count comes at an addit
 ```
 
 As you can see in example above, only the `CountResolve` you be called and the query will not have the cost of calling DataResolve because `data` was not requested.
+
+
+## Resolve Data and Count at once
+
+If your API or your Database already returns Data and Count, you can use DataAndCountResolver. Example:
+
+```go
+  fields := graphql.Fields{
+    "languages": pagination.Paginated(&PaginatedField{
+        Name: "Languages",
+        Type: graphql.String,
+        Args: nil,
+        DataAndCountResolve: func(p graphql.ResolveParams, page Page) (interface{}, int, error) {
+            return []string{"Go", "Javascript", "Ruby", "Elixir"}, 4, nil
+        },
+    }),
+  }
+```
